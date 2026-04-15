@@ -7,8 +7,23 @@ router = APIRouter()
 
 @router.post("/", response_model=schemas.TallerResponse)
 def create_taller(taller: schemas.TallerCreate, db: Session = Depends(get_db)):
-    # Check si el taller (correo) ya existe
-    # TODO: Añadir validación completa por correo/nit.
+    # 1. Verificar si el correo ya existe
+    existing_email = get_taller_by_email(db, taller.correo)
+    if existing_email:
+        raise HTTPException(
+            status_code=400, 
+            detail="Este correo electrónico ya está registrado en el sistema."
+        )
+    
+    # 2. Verificar si el NIT ya existe
+    import models
+    existing_nit = db.query(models.Taller).filter(models.Taller.nit == taller.nit).first()
+    if existing_nit:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"El NIT {taller.nit} ya se encuentra registrado. Si es un error, contacta a soporte."
+        )
+
     return crud.create_taller(db=db, taller=taller)
 
 @router.get("/", response_model=list[schemas.TallerResponse])

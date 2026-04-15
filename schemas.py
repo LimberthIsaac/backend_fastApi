@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime, time
 
@@ -23,7 +23,7 @@ class ClienteResponse(ClienteBase):
 # --- Taller Schemas ---
 class TallerBase(BaseModel):
     razon_social: str
-    nit: str
+    nit: str = Field(..., pattern=r"^[0-9]+$")
     correo: EmailStr
     ubicacion_base_latitud: float
     ubicacion_base_longitud: float
