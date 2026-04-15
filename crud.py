@@ -42,9 +42,6 @@ def get_talleres(db: Session, skip: int = 0, limit: int = 100):
 def create_taller(db: Session, taller: schemas.TallerCreate):
     hashed_password = get_password_hash(taller.password)
     
-    # Valores por defecto para registro simplificado
-    lat = taller.ubicacion_base_latitud if taller.ubicacion_base_latitud is not None else 0.0
-    lng = taller.ubicacion_base_longitud if taller.ubicacion_base_longitud is not None else 0.0
     h_abre = taller.horario_apertura if taller.horario_apertura is not None else time(0, 0)
     h_cierra = taller.horario_cierre if taller.horario_cierre is not None else time(23, 59, 59)
 
@@ -52,8 +49,8 @@ def create_taller(db: Session, taller: schemas.TallerCreate):
         razon_social=taller.razon_social,
         nit=taller.nit,
         correo=taller.correo,
-        ubicacion_base_latitud=lat,
-        ubicacion_base_longitud=lng,
+        ubicacion_base_latitud=taller.ubicacion_base_latitud,
+        ubicacion_base_longitud=taller.ubicacion_base_longitud,
         horario_apertura=h_abre,
         horario_cierre=h_cierra,
         cuenta_bancaria=taller.cuenta_bancaria,

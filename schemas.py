@@ -25,8 +25,8 @@ class TallerBase(BaseModel):
     razon_social: str
     nit: str
     correo: EmailStr
-    ubicacion_base_latitud: Optional[float] = None
-    ubicacion_base_longitud: Optional[float] = None
+    ubicacion_base_latitud: float
+    ubicacion_base_longitud: float
     horario_apertura: Optional[time] = None
     horario_cierre: Optional[time] = None
     cuenta_bancaria: Optional[str] = None
