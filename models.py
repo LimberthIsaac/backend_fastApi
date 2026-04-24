@@ -8,12 +8,11 @@ class Cliente(Base):
     id_cliente = Column(Integer, primary_key=True, index=True)
     nombres = Column(String(100), nullable=False)
     apellidos = Column(String(100), nullable=False)
+    ci_dni = Column(String(20), unique=True, nullable=False) # Obligatorio por seguridad
     telefono = Column(String(20), nullable=False)
     correo = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    reset_token = Column(String(255), nullable=True)
-    token_expiry = Column(TIMESTAMP, nullable=True)
-    fecha_registro = Column(TIMESTAMP, server_default=func.now())
+    foto_perfil_url = Column(String(255), nullable=True)
     estado_cuenta = Column(String(20), default='Activo')
     calificacion_promedio = Column(DECIMAL(3, 2), default=5.00)
     created_at = Column(TIMESTAMP, server_default=func.now())
@@ -23,29 +22,81 @@ class Cliente(Base):
     incidentes = relationship("Incidente", back_populates="cliente")
 
 
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id_admin = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False)
+    correo = Column(String(100), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    rol = Column(String(20), default='Admin')
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+
 class Taller(Base):
     __tablename__ = "talleres"
 
     id_taller = Column(Integer, primary_key=True, index=True)
     razon_social = Column(String(150), nullable=False)
+    nombre_representante = Column(String(150), nullable=False)
+    id_admin_aprobador = Column(Integer, ForeignKey('admins.id_admin'), nullable=True)
     nit = Column(String(30), unique=True, nullable=False)
     ubicacion_base_latitud = Column(Float, nullable=False)
     ubicacion_base_longitud = Column(Float, nullable=False)
-    horario_apertura = Column(Time, nullable=False)
-    horario_cierre = Column(Time, nullable=False)
+    direccion_fisica = Column(Text, nullable=True)
+    telefono_taller = Column(String(20), nullable=True)
+    logo_url = Column(String(255), nullable=True)
+    es_24_7 = Column(Boolean, default=False) # Para asignación automática del sistema
+    horario_apertura = Column(Time, nullable=True)
+    horario_cierre = Column(Time, nullable=True)
     cuenta_bancaria = Column(String(50), nullable=True)
     calificacion_promedio = Column(DECIMAL(3, 2), default=5.00)
     estado_aprobacion = Column(String(20), default='Pendiente')
     correo = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    reset_token = Column(String(255), nullable=True)
-    token_expiry = Column(TIMESTAMP, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     tecnicos = relationship("Tecnico", back_populates="taller", cascade="all, delete-orphan")
     taller_servicios = relationship("TallerServicio", back_populates="taller", cascade="all, delete-orphan")
     asistencias = relationship("Asistencia", back_populates="taller")
+
+
+class Especialidad(Base):
+    __tablename__ = "especialidades"
+
+    id_especialidad = Column(Integer, primary_key=True, index=True)
+    nombre_especialidad = Column(String(100), nullable=False, unique=True)
+    descripcion = Column(Text, nullable=True)
+
+
+class TecnicoEspecialidad(Base):
+    __tablename__ = "tecnico_especialidades"
+
+    id_tecnico = Column(Integer, ForeignKey('tecnicos.id_tecnico', ondelete='CASCADE'), primary_key=True)
+    id_especialidad = Column(Integer, ForeignKey('especialidades.id_especialidad', ondelete='CASCADE'), primary_key=True)
+
+
+class Tecnico(Base):
+    __tablename__ = "tecnicos"
+
+    id_tecnico = Column(Integer, primary_key=True, index=True)
+    id_taller = Column(Integer, ForeignKey('talleres.id_taller', ondelete='CASCADE'), nullable=False)
+    nombres = Column(String(100), nullable=False)
+    apellidos = Column(String(100), nullable=False)
+    ci_tecnico = Column(String(20), unique=True, nullable=False) # Obligatorio
+    telefono_contacto = Column(String(20), nullable=False)
+    foto_perfil_url = Column(String(255), nullable=True)
+    en_turno = Column(Boolean, default=False)
+    ubicacion_actual_latitud = Column(Float, nullable=True)
+    ubicacion_actual_longitud = Column(Float, nullable=True)
+    estado_operativo = Column(String(20), default='Disponible')
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+
+    taller = relationship("Taller", back_populates="tecnicos")
+    asistencias = relationship("Asistencia", back_populates="tecnico")
+    especialidades = relationship("Especialidad", secondary="tecnico_especialidades")
 
 
 class Servicio(Base):
@@ -55,10 +106,22 @@ class Servicio(Base):
     nombre_servicio = Column(String(100), nullable=False)
     descripcion = Column(Text, nullable=True)
     tarifa_base_estimada = Column(DECIMAL(10, 2), nullable=False)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
-    taller_servicios = relationship("TallerServicio", back_populates="servicio", cascade="all, delete-orphan")
+    taller_servicios = relationship("TallerServicio", back_populates="servicio")
+
+
+class TallerServicio(Base):
+    __tablename__ = "taller_servicios"
+
+    id_taller_servicio = Column(Integer, primary_key=True, index=True)
+    id_taller = Column(Integer, ForeignKey('talleres.id_taller', ondelete='CASCADE'), nullable=False)
+    id_servicio = Column(Integer, ForeignKey('servicios.id_servicio', ondelete='CASCADE'), nullable=False)
+    precio_especifico_taller = Column(DECIMAL(10, 2), nullable=False)
+    tiempo_estimado_minutos = Column(Integer, nullable=True)
+    estado_disponible = Column(Boolean, default=True)
+
+    taller = relationship("Taller", back_populates="taller_servicios")
+    servicio = relationship("Servicio", back_populates="taller_servicios")
 
 
 class Vehiculo(Base):
@@ -73,47 +136,9 @@ class Vehiculo(Base):
     color = Column(String(30), nullable=False)
     tipo_transmision = Column(String(20), nullable=False)
     tipo_combustible = Column(String(20), nullable=False)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     cliente = relationship("Cliente", back_populates="vehiculos")
     incidentes = relationship("Incidente", back_populates="vehiculo")
-
-
-class Tecnico(Base):
-    __tablename__ = "tecnicos"
-
-    id_tecnico = Column(Integer, primary_key=True, index=True)
-    id_taller = Column(Integer, ForeignKey('talleres.id_taller', ondelete='CASCADE'), nullable=False)
-    nombres = Column(String(100), nullable=False)
-    apellidos = Column(String(100), nullable=False)
-    telefono_contacto = Column(String(20), nullable=False)
-    especialidad = Column(String(50), nullable=True)
-    en_turno = Column(Boolean, default=False)
-    ubicacion_actual_latitud = Column(Float, nullable=True)
-    ubicacion_actual_longitud = Column(Float, nullable=True)
-    estado_operativo = Column(String(20), default='Disponible')
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
-
-    taller = relationship("Taller", back_populates="tecnicos")
-    asistencias = relationship("Asistencia", back_populates="tecnico")
-
-
-class TallerServicio(Base):
-    __tablename__ = "taller_servicios"
-
-    id_taller_servicio = Column(Integer, primary_key=True, index=True)
-    id_taller = Column(Integer, ForeignKey('talleres.id_taller', ondelete='CASCADE'), nullable=False)
-    id_servicio = Column(Integer, ForeignKey('servicios.id_servicio', ondelete='CASCADE'), nullable=False)
-    precio_especifico_taller = Column(DECIMAL(10, 2), nullable=False)
-    tiempo_estimado_minutos = Column(Integer, nullable=True)
-    estado_disponible = Column(Boolean, default=True)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
-
-    taller = relationship("Taller", back_populates="taller_servicios")
-    servicio = relationship("Servicio", back_populates="taller_servicios")
 
 
 class Incidente(Base):
@@ -131,8 +156,6 @@ class Incidente(Base):
     estado_solicitud = Column(String(20), default='Pendiente')
     distancia_km_calculada = Column(DECIMAL(5, 2), nullable=True)
     motivo_cancelacion = Column(Text, nullable=True)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     cliente = relationship("Cliente", back_populates="incidentes")
     vehiculo = relationship("Vehiculo", back_populates="incidentes")
@@ -149,8 +172,6 @@ class Evidencia(Base):
     tipo_recurso = Column(String(20), nullable=False)
     url_archivo = Column(String(255), nullable=False)
     fecha_subida = Column(TIMESTAMP, server_default=func.now())
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     incidente = relationship("Incidente", back_populates="evidencias")
 
@@ -165,8 +186,6 @@ class AnalisisIA(Base):
     resumen_estructurado = Column(Text, nullable=True)
     nivel_confianza_porcentaje = Column(Integer, nullable=True)
     requiere_revision_manual = Column(Boolean, default=False)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     incidente = relationship("Incidente", back_populates="analisis_ia")
 
@@ -182,13 +201,12 @@ class Asistencia(Base):
     fecha_hora_llegada_tecnico = Column(TIMESTAMP, nullable=True)
     fecha_hora_finalizacion = Column(TIMESTAMP, nullable=True)
     observaciones_tecnico = Column(Text, nullable=True)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     incidente = relationship("Incidente", back_populates="asistencia")
     taller = relationship("Taller", back_populates="asistencias")
     tecnico = relationship("Tecnico", back_populates="asistencias")
     pago = relationship("Pago", back_populates="asistencia", uselist=False)
+    valoracion = relationship("Valoracion", back_populates="asistencia", uselist=False)
 
 
 class Pago(Base):
@@ -202,7 +220,44 @@ class Pago(Base):
     metodo_pago = Column(String(30), nullable=False)
     estado_transaccion = Column(String(20), default='Pendiente')
     fecha_pago = Column(TIMESTAMP, nullable=True)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     asistencia = relationship("Asistencia", back_populates="pago")
+
+
+class Valoracion(Base):
+    __tablename__ = "valoraciones"
+
+    id_valoracion = Column(Integer, primary_key=True, index=True)
+    id_asistencia = Column(Integer, ForeignKey('asistencias.id_asistencia'), nullable=False, unique=True)
+    puntuacion = Column(Integer, nullable=False)
+    comentario = Column(Text, nullable=True)
+    fecha_valoracion = Column(TIMESTAMP, server_default=func.now())
+
+    asistencia = relationship("Asistencia", back_populates="valoracion")
+
+
+class Notificacion(Base):
+    __tablename__ = "notificaciones"
+
+    id_notificacion = Column(Integer, primary_key=True, index=True)
+    id_usuario_destino = Column(Integer, nullable=False)
+    tipo_usuario_destino = Column(String(20), nullable=False)
+    titulo = Column(String(100), nullable=False)
+    mensaje = Column(Text, nullable=False)
+    leido = Column(Boolean, default=False)
+    fecha_envio = Column(TIMESTAMP, server_default=func.now())
+
+
+class Bitacora(Base):
+    __tablename__ = "bitacora"
+
+    id_log = Column(Integer, primary_key=True, index=True)
+    id_usuario = Column(Integer, nullable=True)
+    tipo_usuario = Column(String(20), nullable=True)
+    accion = Column(String(100), nullable=False)
+    descripcion = Column(Text, nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    fecha_hora = Column(TIMESTAMP, server_default=func.now())
+
+
+

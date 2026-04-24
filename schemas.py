@@ -6,8 +6,10 @@ from datetime import datetime, time
 class ClienteBase(BaseModel):
     nombres: str
     apellidos: str
+    ci_dni: str
     telefono: str
     correo: EmailStr
+    foto_perfil_url: Optional[str] = None
 
 class ClienteCreate(ClienteBase):
     password: str
@@ -16,17 +18,21 @@ class ClienteResponse(ClienteBase):
     id_cliente: int
     estado_cuenta: str
     calificacion_promedio: float
-    fecha_registro: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 # --- Taller Schemas ---
 class TallerBase(BaseModel):
     razon_social: str
+    nombre_representante: str
     nit: str = Field(..., pattern=r"^[0-9]+$")
     correo: EmailStr
     ubicacion_base_latitud: float
     ubicacion_base_longitud: float
+    direccion_fisica: Optional[str] = None
+    telefono_taller: Optional[str] = None
+    logo_url: Optional[str] = None
+    es_24_7: bool = False
     horario_apertura: Optional[time] = None
     horario_cierre: Optional[time] = None
     cuenta_bancaria: Optional[str] = None
@@ -36,30 +42,38 @@ class TallerCreate(TallerBase):
 
 class TallerResponse(TallerBase):
     id_taller: int
+    id_admin_aprobador: Optional[int] = None
     estado_aprobacion: str
     calificacion_promedio: float
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- Incidente Schemas ---
-class IncidenteBase(BaseModel):
-    ubicacion_latitud: float
-    ubicacion_longitud: float
-    tipo_problema: str
-    descripcion_manual: Optional[str] = None
-    nivel_prioridad: Optional[str] = None
+# --- Especialidad Schemas ---
+class EspecialidadBase(BaseModel):
+    nombre_especialidad: str
+    descripcion: Optional[str] = None
 
-class IncidenteCreate(IncidenteBase):
-    id_cliente: int
-    id_vehiculo: int
+class EspecialidadResponse(EspecialidadBase):
+    id_especialidad: int
+    model_config = ConfigDict(from_attributes=True)
 
-class IncidenteResponse(IncidenteBase):
-    id_incidente: int
-    id_cliente: int
-    id_vehiculo: int
-    estado_solicitud: str
-    fecha_hora_reporte: datetime
-    distancia_km_calculada: Optional[float]
+# --- Tecnico Schemas ---
+class TecnicoBase(BaseModel):
+    nombres: str
+    apellidos: str
+    ci_tecnico: str
+    telefono_contacto: str
+    foto_perfil_url: Optional[str] = None
+
+class TecnicoCreate(TecnicoBase):
+    id_taller: int
+
+class TecnicoResponse(TecnicoBase):
+    id_tecnico: int
+    id_taller: int
+    en_turno: bool
+    estado_operativo: str
+    especialidades: List[EspecialidadResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

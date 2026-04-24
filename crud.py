@@ -26,9 +26,11 @@ def create_cliente(db: Session, cliente: schemas.ClienteCreate):
     db_cliente = models.Cliente(
         nombres=cliente.nombres,
         apellidos=cliente.apellidos,
+        ci_dni=cliente.ci_dni,
         telefono=cliente.telefono,
         correo=cliente.correo,
-        password_hash=hashed_password
+        password_hash=hashed_password,
+        foto_perfil_url=cliente.foto_perfil_url
     )
     db.add(db_cliente)
     db.commit()
@@ -42,17 +44,19 @@ def get_talleres(db: Session, skip: int = 0, limit: int = 100):
 def create_taller(db: Session, taller: schemas.TallerCreate):
     hashed_password = get_password_hash(taller.password)
     
-    h_abre = taller.horario_apertura if taller.horario_apertura is not None else time(0, 0)
-    h_cierra = taller.horario_cierre if taller.horario_cierre is not None else time(23, 59, 59)
-
     db_taller = models.Taller(
         razon_social=taller.razon_social,
+        nombre_representante=taller.nombre_representante,
         nit=taller.nit,
         correo=taller.correo,
         ubicacion_base_latitud=taller.ubicacion_base_latitud,
         ubicacion_base_longitud=taller.ubicacion_base_longitud,
-        horario_apertura=h_abre,
-        horario_cierre=h_cierra,
+        direccion_fisica=taller.direccion_fisica,
+        telefono_taller=taller.telefono_taller,
+        logo_url=taller.logo_url,
+        es_24_7=taller.es_24_7,
+        horario_apertura=taller.horario_apertura,
+        horario_cierre=taller.horario_cierre,
         cuenta_bancaria=taller.cuenta_bancaria,
         password_hash=hashed_password
     )
