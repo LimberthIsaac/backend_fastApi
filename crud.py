@@ -57,6 +57,7 @@ def create_taller(db: Session, taller: schemas.TallerCreate):
         es_24_7=taller.es_24_7,
         horario_apertura=taller.horario_apertura,
         horario_cierre=taller.horario_cierre,
+        horario_cierre_sabado=taller.horario_cierre_sabado,
         cuenta_bancaria=taller.cuenta_bancaria,
         password_hash=hashed_password
     )

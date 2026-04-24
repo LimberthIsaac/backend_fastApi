@@ -41,6 +41,7 @@ CREATE TABLE talleres (
     es_24_7 BOOLEAN DEFAULT FALSE, -- Flag para el sistema de asignación
     horario_apertura TIME,
     horario_cierre TIME,
+    horario_cierre_sabado TIME,
     cuenta_bancaria VARCHAR(50),
     calificacion_promedio DECIMAL(3,2) DEFAULT 5.00,
     estado_aprobacion VARCHAR(20) DEFAULT 'Pendiente',

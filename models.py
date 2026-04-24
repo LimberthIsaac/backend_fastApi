@@ -49,6 +49,7 @@ class Taller(Base):
     es_24_7 = Column(Boolean, default=False) # Para asignación automática del sistema
     horario_apertura = Column(Time, nullable=True)
     horario_cierre = Column(Time, nullable=True)
+    horario_cierre_sabado = Column(Time, nullable=True)
     cuenta_bancaria = Column(String(50), nullable=True)
     calificacion_promedio = Column(DECIMAL(3, 2), default=5.00)
     estado_aprobacion = Column(String(20), default='Pendiente')

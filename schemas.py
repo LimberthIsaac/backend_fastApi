@@ -35,6 +35,7 @@ class TallerBase(BaseModel):
     es_24_7: bool = False
     horario_apertura: Optional[time] = None
     horario_cierre: Optional[time] = None
+    horario_cierre_sabado: Optional[time] = None
     cuenta_bancaria: Optional[str] = None
 
 class TallerCreate(TallerBase):
