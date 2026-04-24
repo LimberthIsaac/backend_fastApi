@@ -94,4 +94,54 @@ class VehiculoResponse(VehiculoBase):
     id_vehiculo: int
     id_cliente: int
 
+# --- Vehiculo Schemas ---
+class VehiculoBase(BaseModel):
+    placa: str
+    marca: str
+    modelo: str
+    año: int
+    color: str
+    tipo_transmision: str
+    tipo_combustible: str
+
+class VehiculoCreate(VehiculoBase):
+    id_cliente: int
+
+class VehiculoResponse(VehiculoBase):
+    id_vehiculo: int
+    id_cliente: int
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Incidente Schemas ---
+class IncidenteBase(BaseModel):
+    ubicacion_latitud: float
+    ubicacion_longitud: float
+    tipo_problema: str
+    descripcion_manual: Optional[str] = None
+    nivel_prioridad: Optional[str] = None
+
+class IncidenteCreate(IncidenteBase):
+    id_cliente: int
+    id_vehiculo: int
+
+class IncidenteResponse(IncidenteBase):
+    id_incidente: int
+    id_cliente: int
+    id_vehiculo: int
+    estado_solicitud: str
+    fecha_hora_reporte: datetime
+    distancia_km_calculada: Optional[float]
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Pago Schemas ---
+class PagoBase(BaseModel):
+    monto_subtotal: float
+    metodo_pago: str
+
+class PagoResponse(PagoBase):
+    id_pago: int
+    monto_comision_plataforma: float
+    monto_total_cliente: float
+    estado_transaccion: str
+    fecha_pago: Optional[datetime]
     model_config = ConfigDict(from_attributes=True)
