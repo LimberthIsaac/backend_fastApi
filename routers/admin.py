@@ -623,6 +623,15 @@ def aprobar_taller(id_taller: int, db: Session = Depends(get_db)):
     if not taller:
         raise HTTPException(status_code=404, detail="Taller no encontrado")
     taller.estado_aprobacion = "Aprobado"
+    
+    # Registrar en Bitácora
+    log = models.Bitacora(
+        tipo_usuario="SuperAdmin",
+        accion="Aprobar Taller",
+        descripcion=f"El taller {taller.razon_social} (NIT: {taller.nit}) ha sido aprobado para operar en la plataforma."
+    )
+    db.add(log)
+    
     db.commit()
     return {"message": "Taller aprobado exitosamente."}
 
@@ -632,5 +641,27 @@ def rechazar_taller(id_taller: int, db: Session = Depends(get_db)):
     if not taller:
         raise HTTPException(status_code=404, detail="Taller no encontrado")
     taller.estado_aprobacion = "Rechazado"
+    
+    # Registrar en Bitácora
+    log = models.Bitacora(
+        tipo_usuario="SuperAdmin",
+        accion="Rechazar Taller",
+        descripcion=f"La solicitud del taller {taller.razon_social} (NIT: {taller.nit}) ha sido rechazada."
+    )
+    db.add(log)
+    
     db.commit()
     return {"message": "Taller rechazado exitosamente."}
+
+@router.get("/bitacora")
+def obtener_bitacora(db: Session = Depends(get_db)):
+    logs = db.query(models.Bitacora).order_by(models.Bitacora.fecha_hora.desc()).limit(50).all()
+    return [
+        {
+            "id_log": l.id_log,
+            "tipo_usuario": l.tipo_usuario,
+            "accion": l.accion,
+            "descripcion": l.descripcion,
+            "fecha_hora": l.fecha_hora
+        } for l in logs
+    ]
