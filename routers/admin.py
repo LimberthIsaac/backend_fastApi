@@ -8,8 +8,23 @@ import crud
 
 router = APIRouter(prefix="/api/admin", tags=["SuperAdmin"])
 
-# Backdoor removido para producción.
-
+# Endpoint de inicialización segura
+@router.post("/setup_initial_superuser")
+def setup_initial_superuser(db: Session = Depends(get_db)):
+    from utils import get_password_hash
+    admin_count = db.query(models.Admin).count()
+    if admin_count > 0:
+        raise HTTPException(status_code=403, detail="Setup bloqueado. Ya existe un superadministrador en el sistema.")
+    
+    nuevo_admin = models.Admin(
+        nombre="Limberth (SuperAdmin)",
+        correo="asiscar.asistente@gmail.com",
+        password_hash=get_password_hash("AsiscarAsistente2026"),
+        rol="Admin"
+    )
+    db.add(nuevo_admin)
+    db.commit()
+    return {"message": "✅ Superusuario inicial creado con éxito. Ya puedes iniciar sesión."}
 @router.post("/login")
 def login_admin(payload: dict, db: Session = Depends(get_db)):
     import models
