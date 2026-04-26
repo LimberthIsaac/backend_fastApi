@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import crud, schemas, schemas_auth
+import crud, schemas, schemas_auth, models
 from database import get_db
 
 router = APIRouter()
@@ -16,7 +16,6 @@ def create_taller(taller: schemas.TallerCreate, db: Session = Depends(get_db)):
         )
     
     # 2. Verificar si el NIT ya existe
-    import models
     existing_nit = db.query(models.Taller).filter(models.Taller.nit == taller.nit).first()
     if existing_nit:
         raise HTTPException(
@@ -28,7 +27,6 @@ def create_taller(taller: schemas.TallerCreate, db: Session = Depends(get_db)):
 
 @router.get("/{id_taller}", response_model=schemas.TallerResponse)
 def read_taller(id_taller: int, db: Session = Depends(get_db)):
-    import models
     taller = db.query(models.Taller).filter(models.Taller.id_taller == id_taller).first()
     if not taller:
         raise HTTPException(status_code=404, detail="Taller no encontrado")
@@ -40,7 +38,6 @@ def read_talleres(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     return talleres
 
 def get_taller_by_email(db: Session, email: str):
-    import models
     return db.query(models.Taller).filter(models.Taller.correo == email).first()
 
 @router.post("/login")
@@ -70,7 +67,6 @@ def login(request: schemas_auth.LoginRequest, db: Session = Depends(get_db)):
         }
         
     # 2. Intentar como Admin
-    import models
     
     # Crear admin por defecto si la tabla está vacía
     admins_count = db.query(models.Admin).count()
