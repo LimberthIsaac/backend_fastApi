@@ -36,6 +36,8 @@ class TallerBase(BaseModel):
     horario_apertura: Optional[time] = None
     horario_cierre: Optional[time] = None
     horario_cierre_sabado: Optional[time] = None
+    foto_nit_url: Optional[str] = None
+    foto_local_url: Optional[str] = None
     cuenta_bancaria: Optional[str] = None
 
 class TallerCreate(TallerBase):
@@ -64,15 +66,18 @@ class TecnicoBase(BaseModel):
     apellidos: str
     ci_tecnico: str
     telefono_contacto: str
+    correo: EmailStr
     foto_perfil_url: Optional[str] = None
 
 class TecnicoCreate(TecnicoBase):
     id_taller: int
+    password: str
 
 class TecnicoResponse(TecnicoBase):
     id_tecnico: int
     id_taller: int
     en_turno: bool
+    primer_login: bool
     estado_operativo: str
     especialidades: List[EspecialidadResponse] = []
 
@@ -145,4 +150,34 @@ class PagoResponse(PagoBase):
     monto_total_cliente: float
     estado_transaccion: str
     fecha_pago: Optional[datetime]
+    model_config = ConfigDict(from_attributes=True)
+
+
+# --- Auth Schemas ---
+class ForgotPasswordRequest(BaseModel):
+    correo: EmailStr
+
+class VerifyTokenRequest(BaseModel):
+    correo: EmailStr
+    token: str
+
+class ResetPasswordRequest(BaseModel):
+    correo: EmailStr
+    token: str
+    nueva_password: str
+
+class UpdateFCMTokenRequest(BaseModel):
+    fcm_token: str
+
+# --- Valoracion Schemas ---
+class ValoracionCreate(BaseModel):
+    puntuacion: int
+    comentario: Optional[str] = None
+
+class ValoracionResponse(BaseModel):
+    id_valoracion: int
+    id_asistencia: int
+    puntuacion: int
+    comentario: Optional[str] = None
+    fecha_valoracion: datetime
     model_config = ConfigDict(from_attributes=True)

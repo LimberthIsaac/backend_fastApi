@@ -58,6 +58,8 @@ def create_taller(db: Session, taller: schemas.TallerCreate):
         horario_apertura=taller.horario_apertura,
         horario_cierre=taller.horario_cierre,
         horario_cierre_sabado=taller.horario_cierre_sabado,
+        foto_nit_url=taller.foto_nit_url,
+        foto_local_url=taller.foto_local_url,
         cuenta_bancaria=taller.cuenta_bancaria,
         password_hash=hashed_password
     )
@@ -76,3 +78,26 @@ def create_incidente(db: Session, incidente: schemas.IncidenteCreate):
 
 def get_incidentes(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Incidente).offset(skip).limit(limit).all()
+
+# --- CRUD Tecnico ---
+def get_tecnico_by_email(db: Session, email: str):
+    return db.query(models.Tecnico).filter(models.Tecnico.correo == email).first()
+
+def get_tecnicos_by_taller(db: Session, id_taller: int):
+    return db.query(models.Tecnico).filter(models.Tecnico.id_taller == id_taller).all()
+
+def create_tecnico(db: Session, tecnico: schemas.TecnicoCreate):
+    hashed_password = get_password_hash(tecnico.password)
+    db_tecnico = models.Tecnico(
+        id_taller=tecnico.id_taller,
+        nombres=tecnico.nombres,
+        apellidos=tecnico.apellidos,
+        ci_tecnico=tecnico.ci_tecnico,
+        telefono_contacto=tecnico.telefono_contacto,
+        correo=tecnico.correo,
+        password_hash=hashed_password
+    )
+    db.add(db_tecnico)
+    db.commit()
+    db.refresh(db_tecnico)
+    return db_tecnico

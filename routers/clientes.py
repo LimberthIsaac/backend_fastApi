@@ -36,3 +36,40 @@ def login(request: schemas_auth.LoginRequest, db: Session = Depends(get_db)):
         "user_id": db_cliente.id_cliente,
         "user_name": f"{db_cliente.nombres} {db_cliente.apellidos}"
     }
+
+@router.post("/{cliente_id}/fcm-token")
+def update_fcm_token(cliente_id: int, request: schemas.UpdateFCMTokenRequest, db: Session = Depends(get_db)):
+    db_cliente = crud.get_cliente(db, cliente_id=cliente_id)
+    if not db_cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    db_cliente.fcm_token = request.fcm_token
+    db.commit()
+    return {"message": "Token FCM actualizado exitosamente"}
+
+@router.get("/{cliente_id}/vehiculos", response_model=list[schemas.VehiculoResponse])
+def get_cliente_vehiculos(cliente_id: int, db: Session = Depends(get_db)):
+    import models
+    vehiculos = db.query(models.Vehiculo).filter(models.Vehiculo.id_cliente == cliente_id).all()
+    return vehiculos
+
+@router.post("/{cliente_id}/vehiculos", response_model=schemas.VehiculoResponse)
+def create_cliente_vehiculo(cliente_id: int, vehiculo: schemas.VehiculoBase, db: Session = Depends(get_db)):
+    import models
+    existing = db.query(models.Vehiculo).filter(models.Vehiculo.placa == vehiculo.placa).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Ya existe un vehículo registrado con esta placa.")
+        
+    db_vehiculo = models.Vehiculo(
+        id_cliente=cliente_id,
+        placa=vehiculo.placa,
+        marca=vehiculo.marca,
+        modelo=vehiculo.modelo,
+        año=vehiculo.año,
+        color=vehiculo.color,
+        tipo_transmision=vehiculo.tipo_transmision,
+        tipo_combustible=vehiculo.tipo_combustible
+    )
+    db.add(db_vehiculo)
+    db.commit()
+    db.refresh(db_vehiculo)
+    return db_vehiculo

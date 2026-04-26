@@ -13,6 +13,7 @@ class Cliente(Base):
     correo = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     foto_perfil_url = Column(String(255), nullable=True)
+    fcm_token = Column(String(255), nullable=True)
     estado_cuenta = Column(String(20), default='Activo')
     calificacion_promedio = Column(DECIMAL(3, 2), default=5.00)
     created_at = Column(TIMESTAMP, server_default=func.now())
@@ -50,6 +51,8 @@ class Taller(Base):
     horario_apertura = Column(Time, nullable=True)
     horario_cierre = Column(Time, nullable=True)
     horario_cierre_sabado = Column(Time, nullable=True)
+    foto_nit_url = Column(String(255), nullable=True)
+    foto_local_url = Column(String(255), nullable=True)
     cuenta_bancaria = Column(String(50), nullable=True)
     calificacion_promedio = Column(DECIMAL(3, 2), default=5.00)
     estado_aprobacion = Column(String(20), default='Pendiente')
@@ -87,7 +90,11 @@ class Tecnico(Base):
     apellidos = Column(String(100), nullable=False)
     ci_tecnico = Column(String(20), unique=True, nullable=False) # Obligatorio
     telefono_contacto = Column(String(20), nullable=False)
+    correo = Column(String(100), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    primer_login = Column(Boolean, default=True)
     foto_perfil_url = Column(String(255), nullable=True)
+    fcm_token = Column(String(255), nullable=True)
     en_turno = Column(Boolean, default=False)
     ubicacion_actual_latitud = Column(Float, nullable=True)
     ubicacion_actual_longitud = Column(Float, nullable=True)
@@ -259,6 +266,16 @@ class Bitacora(Base):
     descripcion = Column(Text, nullable=True)
     ip_address = Column(String(45), nullable=True)
     fecha_hora = Column(TIMESTAMP, server_default=func.now())
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id_token = Column(Integer, primary_key=True, index=True)
+    correo = Column(String(100), nullable=False)
+    token = Column(String(6), nullable=False)
+    expiracion = Column(TIMESTAMP, nullable=False)
+    utilizado = Column(Boolean, default=False)
 
 
 

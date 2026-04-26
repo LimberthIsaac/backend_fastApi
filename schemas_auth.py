@@ -9,3 +9,4 @@ class TokenResponse(BaseModel):
     token_type: str
     user_id: int
     user_name: str
+    primer_login: bool = False
