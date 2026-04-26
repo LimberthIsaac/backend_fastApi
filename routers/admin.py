@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/admin", tags=["SuperAdmin"])
 # Endpoint de inicialización segura
 @router.post("/setup_initial_superuser")
 def setup_initial_superuser(db: Session = Depends(get_db)):
-    from utils import get_password_hash
+    from crud import get_password_hash
     admin_count = db.query(models.Admin).count()
     if admin_count > 0:
         raise HTTPException(status_code=403, detail="Setup bloqueado. Ya existe un superadministrador en el sistema.")
