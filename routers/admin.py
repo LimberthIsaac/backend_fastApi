@@ -12,10 +12,17 @@ router = APIRouter(prefix="/api/admin", tags=["SuperAdmin"])
 @router.post("/setup_initial_superuser")
 def setup_initial_superuser(db: Session = Depends(get_db)):
     from crud import get_password_hash
-    admin_count = db.query(models.Admin).count()
-    if admin_count > 0:
-        raise HTTPException(status_code=403, detail="Setup bloqueado. Ya existe un superadministrador en el sistema.")
+    admin = db.query(models.Admin).first()
     
+    if admin:
+        # Si ya existe, simplemente le reiniciamos las credenciales a las correctas
+        admin.correo = "asiscar.asistente@gmail.com"
+        admin.password_hash = get_password_hash("AsiscarAsistente2026")
+        admin.nombre = "Limberth (SuperAdmin)"
+        db.commit()
+        return {"message": "✅ Credenciales de SuperAdmin forzadas a: asiscar.asistente@gmail.com / AsiscarAsistente2026. Ya puedes iniciar sesión."}
+    
+    # Si no existe, lo creamos
     nuevo_admin = models.Admin(
         nombre="Limberth (SuperAdmin)",
         correo="asiscar.asistente@gmail.com",
