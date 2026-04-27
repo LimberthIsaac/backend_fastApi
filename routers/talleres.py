@@ -63,6 +63,8 @@ def login(request: schemas_auth.LoginRequest, db: Session = Depends(get_db)):
             "token_type": "bearer",
             "user_id": db_taller.id_taller,
             "user_name": db_taller.razon_social,
+            "nit": db_taller.nit,
+            "direccion": db_taller.direccion_fisica,
             "role": "taller"
         }
         
